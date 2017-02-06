@@ -1,0 +1,39 @@
+"""
+This program will connect to forecast.io API and get the temperatures of all
+the crime incidents of 2015
+
+Note: Give the program a good 1 hour 50 minutes to run. Because connections to
+the api can take some time
+
+"""
+import pandas as pd
+#forecastio library is mandatory to run the code
+import forecastio
+#df contains the entire data of police incidents
+df=pd.read_csv("Police_Incidents_2015.csv",squeeze=False)
+df['BeginDate']=df['BeginDate'].str.replace("T"," ").str.replace("Z","")
+length_date=len(df['BeginDate'][0])-4
+df['BeginDate']=df['BeginDate'].str[:length_date]
+parse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
+df2=df.copy()
+df2["crime"]=df['BeginDate']
+df2["crime"]=df2["crime"].apply(parse)
+df["crime"]=df2["crime"]
+# create a 'temperature' column and initialize the values to 0 forecast = forecastio.load_forecast(api_key, lat, lng,)
+df["temperature"]=0.0
+#You need an API key to use it (http://developer.forecast.io)
+api_key = "********************"
+# give the list of API keys
+api_key=[]
+#forecast.currently().temperature
+api_connection=0
+for i in range(len(df)):
+    #'Lat' and 'Long' are the columns that contains latitude and longitudes of criminal incidents
+    lat = df["Lat"][i]
+    lng = df["Long"][i]
+    api_key_i=api_key[i/985]
+    #load_forecast method has mandatory parameters as API key, latitude, longitude
+    forecast = forecastio.load_forecast(api_key_i, lat, lng,df["crime"][i])
+    df["temperature"][i]=forecast.currently().temperature
+#Below statement exports the entire data frame of police incidents along with the temperatures
+df.to_csv("Police_Incidents_2015_updatedwithTemp.csv")
